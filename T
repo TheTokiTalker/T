@@ -104,20 +104,27 @@ Public Class Form1
         txtAmountPayable.Text = FormatCurrency(total)
     End Sub
 
-    Private Sub btnSave_Click(sender As Object, e As EventArgs) Handles btnSave.Click
-        ' Save the details to a file
-        Dim savePath As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "call_details.txt")
-        Dim callDetails As String = "Full Name: " & txtFullName.Text & Environment.NewLine &
-                                    "Call Length: " & txtCallLength.Text & Environment.NewLine &
-                                    "Country: " & cmbCountry.SelectedItem.ToString() & Environment.NewLine &
-                                    "Membership Type: " & If(rdoGold.Checked, "Gold", If(rdoSilver.Checked, "Silver", If(rdoBronze.Checked, "Bronze", "No Plan"))) & Environment.NewLine &
-                                    "Evening Call: " & If(chkEveningCalls.Checked, "Yes", "No") & Environment.NewLine &
-                                    "Sub Total: " & txtSubTotal.Text & Environment.NewLine &
-                                    "GST: " & txtGST.Text & Environment.NewLine &
-                                    "Amount Payable: " & txtAmountPayable.Text & Environment.NewLine & Environment.NewLine
-        My.Computer.FileSystem.WriteAllText(savePath, callDetails, True)
-        MsgBox("Call details saved successfully.")
-    End Sub
+  Private Sub btnSave_Click(sender As Object, e As EventArgs) Handles btnSave.Click
+    ' Define the file path
+    Dim filePath As String = "C:\Your\Desired\Path\call_details.txt" ' Replace with your actual path
+
+    ' Create a String variable with UI elements
+    Dim callDetails As String = "Full Name: " & txtFullName.Text & Environment.NewLine &
+                                "Call Length: " & txtCallLength.Text & Environment.NewLine &
+                                "Country: " & cmbCountry.SelectedItem.ToString() & Environment.NewLine &
+                                "Membership Type: " & If(rdoGold.Checked, "Gold", If(rdoSilver.Checked, "Silver", If(rdoBronze.Checked, "Bronze", "No Plan"))) & Environment.NewLine &
+                                "Evening Call: " & If(chkEveningCalls.Checked, "Yes", "No") & Environment.NewLine &
+                                "Sub Total: " & txtSubTotal.Text & Environment.NewLine &
+                                "GST: " & txtGST.Text & Environment.NewLine &
+                                "Amount Payable: " & txtAmountPayable.Text & Environment.NewLine & Environment.NewLine
+
+    ' Open file and write the string, then close file
+    My.Computer.FileSystem.WriteAllText(filePath, callDetails, True)
+
+    ' Inform the user that the details have been saved
+    MessageBox.Show("Call details saved successfully.")
+End Sub
+  
 
     Private Sub btnReset_Click(sender As Object, e As EventArgs) Handles btnReset.Click
         ' Reset all fields
