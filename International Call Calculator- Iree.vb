@@ -1,76 +1,110 @@
 ﻿Public Class Form1
-    Private dictCountryRates As New Dictionary(Of String, Decimal)()
-    Private dictMembershipDiscounts As New Dictionary(Of String, Decimal)()
+    ' Declare variables
+    Dim lengthOfCall As Decimal
+    Dim costPerMinute As Decimal
+    Dim flagfall As Decimal
+    Dim subTotal As Decimal
+    Dim gst As Decimal
+    Dim total As Decimal
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        LoadCountryRates()
-        LoadMembershipDiscounts()
-        PopulateCountryComboBox()
-    End Sub
+        ' Populate the dropdown box with country names
+        CmbCountry.Items.Add("Brazil")
+        CmbCountry.Items.Add("Canada")
+        CmbCountry.Items.Add("China")
+        CmbCountry.Items.Add("India")
+        CmbCountry.Items.Add("Japan")
+        CmbCountry.Items.Add("Malaysia")
+        CmbCountry.Items.Add("Mexico")
+        CmbCountry.Items.Add("New Zealand")
+        CmbCountry.Items.Add("Oman")
+        CmbCountry.Items.Add("Russia")
+        CmbCountry.Items.Add("Singapore")
+        CmbCountry.Items.Add("UK")
+        CmbCountry.Items.Add("USA")
 
-    Private Sub LoadCountryRates()
-        Dim countryRatesData As String = "Brazil,0.75|Canada,1.00|China,0.65|India,0.60|Japan,0.70|Malaysia,0.80|Mexico,0.90|New Zealand,0.85|Oman,0.95|Russia,0.85|Singapore,0.75|UK,1.10|USA,0.55"
-        Dim arrRates As String() = countryRatesData.Split("|"c)
-        For Each rate As String In arrRates
-            Dim parts As String() = rate.Split(","c)
-            dictCountryRates(parts(0)) = Decimal.Parse(parts(1), Globalization.CultureInfo.InvariantCulture)
-        Next
+        ' Set the flagfall values for the radio buttons
+        rdoGold.Tag = 0.25D
+        rdoSilver.Tag = 0.75D
+        rdoBronze.Tag = 1.5D
+        rdoNoPlan.Tag = 2D
     End Sub
-
-    Private Sub LoadMembershipDiscounts()
-        dictMembershipDiscounts("Gold") = 0.25D
-        dictMembershipDiscounts("Silver") = 0.75D
-        dictMembershipDiscounts("Bronze") = 1.5D
-        dictMembershipDiscounts("No Plan") = 2D
-    End Sub
-
-    Private Sub PopulateCountryComboBox()
-        CmbCountry.Items.Clear()
-        For Each strCountry As String In dictCountryRates.Keys
-            CmbCountry.Items.Add(strCountry)
-        Next
-    End Sub
-
-    Private Function GetFlagfall() As Decimal
-        If rdoGold.Checked Then Return dictMembershipDiscounts("Gold")
-        If rdoSilver.Checked Then Return dictMembershipDiscounts("Silver")
-        If rdoBronze.Checked Then Return dictMembershipDiscounts("Bronze")
-        Return dictMembershipDiscounts("No Plan")
-    End Function
 
     Private Sub btnCalculate_Click(sender As Object, e As EventArgs) Handles BtnCalculate.Click
-        Try
-            Dim decCallLength As Decimal = Decimal.Parse(TxtCallLength.Text)
-            If decCallLength < 0 Or decCallLength > 500 Then
-                MessageBox.Show("Please enter a valid call length between 0 and 500 minutes.")
-                Return
-            End If
-            Dim decRate As Decimal = dictCountryRates(CmbCountry.SelectedItem.ToString())
-            Dim decFlagfall As Decimal = GetFlagfall()
-            Dim decSubTotal As Decimal = (decCallLength * decRate) + decFlagfall
-            If ChkEveningCalls.Checked Then decSubTotal *= 0.8D
-            Dim decGST As Decimal = decSubTotal * 0.1D
-            Dim decAmountPayable As Decimal = decSubTotal + decGST
+        ' Check for valid input
+        If String.IsNullOrWhiteSpace(TxtCallLength.Text) Or String.IsNullOrWhiteSpace(TxtFullName.Text) Then
+            MsgBox("Please enter valid call length and full name.")
+            Return
+        End If
 
-            txtSubTotal.Text = decSubTotal.ToString("C")
-            txtGST.Text = decGST.ToString("C")
-            txtAmountPayable.Text = decAmountPayable.ToString("C")
-        Catch ex As Exception
-            MessageBox.Show("Please enter valid input values.")
-        End Try
+        lengthOfCall = Val(TxtCallLength.Text)
+        If lengthOfCall <= 0 Or lengthOfCall > 500 Then
+            MsgBox("Please enter a valid call length between 0 and 500.")
+            Return
+        End If
+
+        ' Determine the cost per minute based on the selected country
+        Dim country As String = CmbCountry.SelectedItem.ToString()
+        If country = "Brazil" Then
+            costPerMinute = 0.34D
+        ElseIf country = "Canada" Then
+            costPerMinute = 0.37D
+        ElseIf country = "China" Then
+            costPerMinute = 0.18D
+        ElseIf country = "India" Then
+            costPerMinute = 0.27D
+        ElseIf country = "Japan" Then
+            costPerMinute = 0.34D
+        ElseIf country = "Malaysia" Then
+            costPerMinute = 0.42D
+        ElseIf country = "Mexico" Then
+            costPerMinute = 0.22D
+        ElseIf country = "New Zealand" Then
+            costPerMinute = 0.22D
+        ElseIf country = "Oman" Then
+            costPerMinute = 0.5D
+        ElseIf country = "Russia" Then
+            costPerMinute = 0.4D
+        ElseIf country = "Singapore" Then
+            costPerMinute = 0.35D
+        ElseIf country = "UK" Then
+            costPerMinute = 0.37D
+        ElseIf country = "USA" Then
+            costPerMinute = 0.42D
+        Else
+            costPerMinute = 1.1D ' Other countries
+        End If
+
+        ' Get the flagfall from the selected membership type
+        If rdoGold.Checked Then
+            flagfall = rdoGold.Tag
+        ElseIf rdoSilver.Checked Then
+            flagfall = rdoSilver.Tag
+        ElseIf rdoBronze.Checked Then
+            flagfall = rdoBronze.Tag
+        Else
+            flagfall = rdoNoPlan.Tag
+        End If
+
+        ' Calculate the subtotal
+        subTotal = (lengthOfCall * costPerMinute) + flagfall
+
+        ' Apply discount if it's an evening call
+        If ChkEveningCalls.Checked Then
+            subTotal *= 0.8D ' Apply 20% discount
+        End If
+
+        ' Calculate GST and total amount payable
+        gst = subTotal * 0.1D
+        total = subTotal + gst
+
+        ' Display the results
+        txtSubTotal.Text = FormatCurrency(subTotal)
+        txtGST.Text = FormatCurrency(gst)
+        txtAmountPayable.Text = FormatCurrency(total)
     End Sub
-
-    Private Sub btnSave_Click(sender As Object, e As EventArgs) Handles BtnSave.Click
-        Dim savePath As String = IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "call_details.txt")
-        Dim data As String = String.Format("Full Name: {0}{1}Call Length: {2}{1}Country: {3}{1}Membership Type: {4}{1}Evening Call: {5}{1}Sub Total: {6}{1}GST: {7}{1}Amount Payable: {8}{1}{1}",
-           TxtFullName.Text, Environment.NewLine, TxtCallLength.Text, CmbCountry.SelectedItem.ToString(),
-            If(rdoGold.Checked, "Gold", If(rdoSilver.Checked, "Silver", If(rdoBronze.Checked, "Bronze", "No Plan"))),
-            If(ChkEveningCalls.Checked, "Yes", "No"), txtSubTotal.Text, txtGST.Text, txtAmountPayable.Text)
-        IO.File.AppendAllText(savePath, data)
-        MessageBox.Show("Call details saved successfully.")
-    End Sub
-
     Private Sub btnReset_Click(sender As Object, e As EventArgs) Handles BtnReset.Click
+        ' Reset all fields
         TxtFullName.Clear()
         TxtCallLength.Clear()
         CmbCountry.SelectedIndex = -1
@@ -82,6 +116,7 @@
     End Sub
 
     Private Sub btnExit_Click(sender As Object, e As EventArgs) Handles BtnExit.Click
+        ' Close the application
         Me.Close()
     End Sub
 End Class
