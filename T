@@ -1,0 +1,138 @@
+Public Class Form1
+    ' Declare variables
+    Dim lengthOfCall As Decimal
+    Dim costPerMinute As Decimal
+    Dim flagfall As Decimal
+    Dim subTotal As Decimal
+    Dim gst As Decimal
+    Dim total As Decimal
+
+    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' Populate the dropdown box with country names
+        cmbCountry.Items.Add("Brazil")
+        cmbCountry.Items.Add("Canada")
+        cmbCountry.Items.Add("China")
+        cmbCountry.Items.Add("India")
+        cmbCountry.Items.Add("Japan")
+        cmbCountry.Items.Add("Malaysia")
+        cmbCountry.Items.Add("Mexico")
+        cmbCountry.Items.Add("New Zealand")
+        cmbCountry.Items.Add("Oman")
+        cmbCountry.Items.Add("Russia")
+        cmbCountry.Items.Add("Singapore")
+        cmbCountry.Items.Add("UK")
+        cmbCountry.Items.Add("USA")
+
+        ' Set the flagfall values for the radio buttons
+        rdoGold.Tag = 0.25D
+        rdoSilver.Tag = 0.75D
+        rdoBronze.Tag = 1.5D
+        rdoNoPlan.Tag = 2.0D
+    End Sub
+
+    Private Sub btnCalculate_Click(sender As Object, e As EventArgs) Handles btnCalculate.Click
+        ' Check for valid input
+        If String.IsNullOrWhiteSpace(txtCallLength.Text) Or String.IsNullOrWhiteSpace(txtFullName.Text) Then
+            MsgBox("Please enter valid call length and full name.")
+            Return
+        End If
+
+        lengthOfCall = Val(txtCallLength.Text)
+        If lengthOfCall <= 0 Or lengthOfCall > 500 Then
+            MsgBox("Please enter a valid call length between 0 and 500.")
+            Return
+        End If
+
+        ' Determine the cost per minute based on the selected country
+        Dim country As String = cmbCountry.SelectedItem.ToString()
+        If country = "Brazil" Then
+            costPerMinute = 0.34D
+        ElseIf country = "Canada" Then
+            costPerMinute = 0.37D
+        ElseIf country = "China" Then
+            costPerMinute = 0.18D
+        ElseIf country = "India" Then
+            costPerMinute = 0.27D
+        ElseIf country = "Japan" Then
+            costPerMinute = 0.34D
+        ElseIf country = "Malaysia" Then
+            costPerMinute = 0.42D
+        ElseIf country = "Mexico" Then
+            costPerMinute = 0.22D
+        ElseIf country = "New Zealand" Then
+            costPerMinute = 0.22D
+        ElseIf country = "Oman" Then
+            costPerMinute = 0.50D
+        ElseIf country = "Russia" Then
+            costPerMinute = 0.40D
+        ElseIf country = "Singapore" Then
+            costPerMinute = 0.35D
+        ElseIf country = "UK" Then
+            costPerMinute = 0.37D
+        ElseIf country = "USA" Then
+            costPerMinute = 0.42D
+        Else
+            costPerMinute = 1.1D ' Other countries
+        End If
+
+        ' Get the flagfall from the selected membership type
+        If rdoGold.Checked Then
+            flagfall = rdoGold.Tag
+        ElseIf rdoSilver.Checked Then
+            flagfall = rdoSilver.Tag
+        ElseIf rdoBronze.Checked Then
+            flagfall = rdoBronze.Tag
+        Else
+            flagfall = rdoNoPlan.Tag
+        End If
+
+        ' Calculate the subtotal
+        subTotal = (lengthOfCall * costPerMinute) + flagfall
+
+        ' Apply discount if it's an evening call
+        If chkEveningCalls.Checked Then
+            subTotal *= 0.8D ' Apply 20% discount
+        End If
+
+        ' Calculate GST and total amount payable
+        gst = subTotal * 0.1D
+        total = subTotal + gst
+
+        ' Display the results
+        txtSubTotal.Text = FormatCurrency(subTotal)
+        txtGST.Text = FormatCurrency(gst)
+        txtAmountPayable.Text = FormatCurrency(total)
+    End Sub
+
+    Private Sub btnSave_Click(sender As Object, e As EventArgs) Handles btnSave.Click
+        ' Save the details to a file
+        Dim savePath As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "call_details.txt")
+        Dim callDetails As String = "Full Name: " & txtFullName.Text & Environment.NewLine &
+                                    "Call Length: " & txtCallLength.Text & Environment.NewLine &
+                                    "Country: " & cmbCountry.SelectedItem.ToString() & Environment.NewLine &
+                                    "Membership Type: " & If(rdoGold.Checked, "Gold", If(rdoSilver.Checked, "Silver", If(rdoBronze.Checked, "Bronze", "No Plan"))) & Environment.NewLine &
+                                    "Evening Call: " & If(chkEveningCalls.Checked, "Yes", "No") & Environment.NewLine &
+                                    "Sub Total: " & txtSubTotal.Text & Environment.NewLine &
+                                    "GST: " & txtGST.Text & Environment.NewLine &
+                                    "Amount Payable: " & txtAmountPayable.Text & Environment.NewLine & Environment.NewLine
+        My.Computer.FileSystem.WriteAllText(savePath, callDetails, True)
+        MsgBox("Call details saved successfully.")
+    End Sub
+
+    Private Sub btnReset_Click(sender As Object, e As EventArgs) Handles btnReset.Click
+        ' Reset all fields
+        txtFullName.Clear()
+        txtCallLength.Clear()
+        cmbCountry.SelectedIndex = -1
+        rdoNoPlan.Checked = True
+        chkEveningCalls.Checked = False
+        txtSubTotal.Clear()
+        txtGST.Clear()
+        txtAmountPayable.Clear()
+    End Sub
+
+    Private Sub btnExit_Click(sender As Object, e As EventArgs) Handles btnExit.Click
+        ' Close the application
+        Me.Close()
+    End Sub
+End Class
